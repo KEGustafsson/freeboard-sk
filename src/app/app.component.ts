@@ -5,6 +5,7 @@ import {
   computed,
   effect,
   inject,
+  Injector,
   signal
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -35,6 +36,9 @@ import {
 
 import { AppFacade } from './app.facade';
 import { InfoPanelFacade, InfoPanelComponent } from './modules/info-panel';
+import { PipAppHostComponent } from './modules/pip-app/pip-app-host.component';
+import { PipAppMenuComponent } from './modules/pip-app/pip-app-menu.component';
+import { PipAppService } from './modules/pip-app/pip-app.service';
 import { SignalKClient } from 'signalk-client-angular';
 import { WakeLockService } from 'src/app/lib/services';
 
@@ -151,6 +155,8 @@ const TRACK_API_NOTICE_KEY = 'fb-track-api-notice-dismissed';
     ETADialComponent,
     FileInputComponent,
     PiPVideoComponent,
+    PipAppHostComponent,
+    PipAppMenuComponent,
     MFBContainerComponent,
     InteractionHelpComponent,
     FBMapComponent,
@@ -273,6 +279,7 @@ export class AppComponent {
   protected skresOther = inject(FBCustomResourceService);
   protected signalk = inject(SignalKClient);
   private dom = inject(DomSanitizer);
+  private injector = inject(Injector);
   private overlayContainer = inject(OverlayContainer);
   private bottomSheet = inject(MatBottomSheet);
   private dialog = inject(MatDialog);
@@ -627,14 +634,42 @@ export class AppComponent {
   }
 
   private formatInstrumentsUrl() {
-    const url = `${this.app.hostDef.url}${this.app.config.display.plugins.instruments}`;
+    return `${this.app.hostDef.url}${this.instrumentsPath()}`;
+  }
+
+  /** Server-relative path of the instruments app, with its parameters. */
+  private instrumentsPath() {
+    const path = this.app.config.display.plugins.instruments;
     const params = this.app.config.display.plugins.parameters
       ? this.app.config.display.plugins.parameters.length > 0 &&
         this.app.config.display.plugins.parameters[0] !== '?'
         ? `?${this.app.config.display.plugins.parameters}`
         : this.app.config.display.plugins.parameters
       : '';
-    return params ? `${url}/${params}` : url;
+    return params ? `${path}/${params}` : path;
+  }
+
+  /** Move the app shown in the instrument panel into a PiP App window. */
+  protected openInstrumentsAsPipApp() {
+    const path =
+      this.selFavourite === -1
+        ? this.instrumentsPath()
+        : this.app.config.display.plugins.favourites[this.selFavourite];
+    // Resolved here, not injected: the PiP App service only exists once a
+    // window is wanted, so nothing of the feature runs while it is off.
+    const pipApps = this.injector.get(PipAppService);
+    // Start where the panel was: the right-hand side, full height.
+    const { w, h } = pipApps.viewport();
+    const opened = pipApps.open(
+      { kind: 'webapp', path },
+      undefined,
+      pipApps.rectFromPixels({ x: w - 360, y: 60, w: 350, h: h - 120 })
+    );
+    if (opened) {
+      this.closeInstrumentPanel();
+    } else {
+      this.app.showMessage('This app cannot be opened as a PiP App.');
+    }
   }
 
   // ** select prev/next favourite plugin **
