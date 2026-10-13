@@ -56,6 +56,7 @@ import { ChartBoundsLayerComponent } from './lib/charts/layer-chart-bounds.compo
 import { RadarComponent } from './lib/radar/layer-radar.component';
 import { RadarZonesComponent } from './lib/radar/layer-radar-zones.component';
 import { RadarZoneEditorComponent } from './lib/radar/radar-zone-editor.component';
+import { ViewFootprintComponent } from './lib/layer-view-footprint.component';
 
 export * from './lib/util';
 export { MapService } from './lib/map.service';
@@ -119,6 +120,7 @@ export { ChartBoundsLayerComponent } from './lib/charts/layer-chart-bounds.compo
 export { RadarComponent } from './lib/radar/layer-radar.component';
 export { RadarZonesComponent } from './lib/radar/layer-radar-zones.component';
 export { RadarZoneEditorComponent } from './lib/radar/radar-zone-editor.component';
+export { ViewFootprintComponent } from './lib/layer-view-footprint.component';
 export { TidalCurrentsLayerComponent } from './lib/resources/tidal-currents-layer.component';
 
 const declarations = [
@@ -173,7 +175,8 @@ const declarations = [
   WmtsChartLayerComponent,
   TileJsonChartLayerComponent,
   MapStyleJsonChartLayerComponent,
-  S57ChartLayerComponent
+  S57ChartLayerComponent,
+  ViewFootprintComponent
 ];
 
 @NgModule({
